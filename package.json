@@ -1,0 +1,39 @@
+{
+  "name": "linkedin-leadgen",
+  "version": "1.0.0",
+  "description": "LinkedIn Sales Navigator lead generation automation via OpenClaw",
+  "type": "module",
+  "scripts": {
+    "db:init": "tsx scripts/db.ts init",
+    "db:stats": "tsx scripts/db.ts stats",
+    "score": "tsx scripts/score.ts",
+    "extract": "tsx scripts/extract.ts",
+    "digest": "tsx scripts/digest.ts",
+    "dashboard": "tsx scripts/serve-dashboard.ts",
+    "dev": "tsx --watch scripts/serve-dashboard.ts",
+    "run": "tsx scripts/run.ts",
+    "run:test": "tsx scripts/run.ts --max 1",
+    "job:db:init": "tsx scripts/job-db.ts init",
+    "job:db:stats": "tsx scripts/job-db.ts stats",
+    "job:run": "tsx scripts/job-run.ts",
+    "job:quick": "tsx scripts/job-run.ts --quick",
+    "job:run:test": "tsx scripts/job-run.ts --content-only --max 1",
+    "job:run:jobs": "tsx scripts/job-run.ts --jobs-only --max 2",
+    "job:run:naukri": "tsx scripts/job-run.ts --naukri-only",
+    "job:run:hirist": "tsx scripts/job-run.ts --hirist-only",
+    "job:run:boards": "tsx scripts/job-run.ts --boards-only",
+    "job:run:linkedin": "tsx scripts/job-run.ts --linkedin-only",
+    "job:digest": "tsx scripts/job-digest.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@hono/node-server": "^1.19.9",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.3.1",
+    "better-sqlite3": "^12.6.2",
+    "hono": "^4.12.3",
+    "playwright": "^1.58.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

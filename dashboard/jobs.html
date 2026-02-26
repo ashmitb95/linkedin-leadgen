@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Search Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Job-specific styles */
+    .nav-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .nav-bar a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .nav-bar a:hover { color: var(--text); }
+    .nav-bar a.active {
+      color: var(--accent-light);
+      border-bottom-color: var(--accent-light);
+    }
+
+    .job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .job-card:hover {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+    .job-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .job-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .job-company {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .job-location {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .job-badges {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .badge.mode-remote { background: #0f3d1f; color: #4ade80; }
+    .badge.mode-hybrid { background: #1e3a5f; color: #60a5fa; }
+    .badge.mode-onsite { background: #3d2510; color: #fb923c; }
+    .badge.mode-unknown { background: #1a2332; color: #94a3b8; }
+    .badge.seniority-exact { background: #0f3d1f; color: #4ade80; }
+    .badge.seniority-close { background: #3d2f0a; color: #fbbf24; }
+    .badge.seniority-mismatch { background: #3f1515; color: #f87171; }
+    .badge.source-content { background: #2d1b4e; color: #c084fc; }
+    .badge.source-jobs { background: #1e3a5f; color: #60a5fa; }
+    .badge.source-naukri { background: #1f3d1f; color: #4ade80; }
+    .badge.source-hirist { background: #3d2f0a; color: #fbbf24; }
+
+    .job-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .job-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      align-items: center;
+    }
+    .fit-score {
+      font-weight: 600;
+    }
+    .fit-bar {
+      display: inline-block;
+      width: 50px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+    .fit-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .fit-bar-fill.high { background: var(--green); }
+    .fit-bar-fill.medium { background: var(--yellow); }
+    .fit-bar-fill.low { background: var(--red); }
+
+    .salary-tag {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* Expanded detail */
+    .job-detail {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .job-card.expanded .job-detail {
+      display: block;
+    }
+    .job-detail-section {
+      margin-bottom: 12px;
+    }
+    .job-detail-section h4 {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .job-detail-section p,
+    .job-detail-section pre {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .job-detail-section pre {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .job-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .job-actions button,
+    .job-actions a {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .job-actions button:hover,
+    .job-actions a:hover {
+      background: var(--surface-hover);
+    }
+    .job-actions button.copy-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .job-actions button.copy-btn:hover {
+      background: var(--accent-light);
+    }
+
+    .notes-area {
+      width: 100%;
+      min-height: 60px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px;
+      font-family: inherit;
+      resize: vertical;
+      margin-top: 4px;
+    }
+    .notes-area:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .notes-save {
+      font-size: 12px;
+      padding: 4px 10px;
+      margin-top: 4px;
+      background: var(--accent);
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .notes-save:hover {
+      background: var(--accent-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-bar">
+      <a href="/">Leads</a>
+      <a href="/jobs" class="active">Job Search</a>
+    </nav>
+
+    <header>
+      <h1><span>Job</span> Search Dashboard</h1>
+      <div class="header-actions">
+        <button onclick="loadStats(); loadJobs();">Refresh</button>
+        <button onclick="exportCSV()" class="export-btn">Export CSV</button>
+        <button onclick="exportHTML()" class="export-btn export-html">Export Report</button>
+      </div>
+    </header>
+
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="label">Total Jobs</div>
+        <div class="value" id="stat-total">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">New Today</div>
+        <div class="value green" id="stat-today">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">New</div>
+        <div class="value blue" id="stat-new">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Saved</div>
+        <div class="value yellow" id="stat-saved">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Applied</div>
+        <div class="value orange" id="stat-applied">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Interviewing</div>
+        <div class="value green" id="stat-interviewing">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Offers</div>
+        <div class="value" id="stat-offer" style="color: #a78bfa">-</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">Status:</span>
+        <button class="filter-btn active" data-filter="status" data-value="">All</button>
+        <button class="filter-btn" data-filter="status" data-value="new">New</button>
+        <button class="filter-btn" data-filter="status" data-value="saved">Saved</button>
+        <button class="filter-btn" data-filter="status" data-value="applied">Applied</button>
+        <button class="filter-btn" data-filter="status" data-value="interviewing">Interviewing</button>
+        <button class="filter-btn" data-filter="status" data-value="offer">Offer</button>
+        <button class="filter-btn" data-filter="status" data-value="rejected">Rejected</button>
+        <button class="filter-btn" data-filter="status" data-value="archived">Archived</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Work Mode:</span>
+        <button class="filter-btn active" data-filter="work_mode" data-value="">All</button>
+        <button class="filter-btn" data-filter="work_mode" data-value="remote">Remote</button>
+        <button class="filter-btn" data-filter="work_mode" data-value="hybrid">Hybrid</button>
+        <button class="filter-btn" data-filter="work_mode" data-value="onsite">Onsite</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Urgency:</span>
+        <button class="filter-btn active" data-filter="urgency" data-value="">All</button>
+        <button class="filter-btn" data-filter="urgency" data-value="high">High</button>
+        <button class="filter-btn" data-filter="urgency" data-value="medium">Medium</button>
+        <button class="filter-btn" data-filter="urgency" data-value="low">Low</button>
+      </div>
+    </div>
+
+    <div class="leads-grid" id="jobs-grid">
+      <div class="loading">Loading jobs...</div>
+    </div>
+  </div>
+
+  <script>
+    var API = window.location.origin + '/api';
+    var currentFilters = { status: '', work_mode: '', urgency: '' };
+
+    // Stats
+    async function loadStats() {
+      try {
+        var res = await fetch(API + '/job-stats');
+        var stats = await res.json();
+        document.getElementById('stat-total').textContent = stats.total_jobs;
+        document.getElementById('stat-today').textContent = stats.today_new;
+        document.getElementById('stat-new').textContent = stats.new_jobs;
+        document.getElementById('stat-saved').textContent = stats.saved;
+        document.getElementById('stat-applied').textContent = stats.applied;
+        document.getElementById('stat-interviewing').textContent = stats.interviewing;
+        document.getElementById('stat-offer').textContent = stats.offer;
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    // Jobs
+    async function loadJobs() {
+      var grid = document.getElementById('jobs-grid');
+      grid.innerHTML = '<div class="loading">Loading jobs...</div>';
+
+      try {
+        var params = new URLSearchParams();
+        if (currentFilters.status) params.set('status', currentFilters.status);
+        if (currentFilters.work_mode) params.set('work_mode', currentFilters.work_mode);
+        if (currentFilters.urgency) params.set('urgency', currentFilters.urgency);
+
+        var res = await fetch(API + '/jobs?' + params);
+        var data = await res.json();
+
+        if (data.jobs.length === 0) {
+          grid.innerHTML = '<div class="empty-state"><h3>No jobs found</h3><p>Run the job search pipeline to find jobs, or adjust your filters.</p></div>';
+          return;
+        }
+
+        grid.innerHTML = data.jobs.map(function(job) { return renderJobCard(job); }).join('');
+      } catch (err) {
+        grid.innerHTML = '<div class="empty-state"><h3>Error loading jobs</h3><p>' + err.message + '</p></div>';
+      }
+    }
+
+    function renderJobCard(job) {
+      var fitPct = Math.round(job.fit_score * 100);
+      var stackPct = Math.round(job.stack_match * 100);
+      var fitClass = fitPct >= 70 ? 'high' : fitPct >= 40 ? 'medium' : 'low';
+      var modeClass = 'mode-' + job.work_mode;
+      var senClass = 'seniority-' + job.seniority_match;
+      var sourceClass = 'source-' + job.source;
+      var descSnippet = job.job_description
+        ? job.job_description.slice(0, 160) + (job.job_description.length > 160 ? '...' : '')
+        : '';
+      var foundDate = job.found_at ? new Date(job.found_at).toLocaleDateString() : '';
+
+      var statusOptions = ['new', 'saved', 'applied', 'interviewing', 'offer', 'rejected', 'archived'];
+      var statusSelect = '<select class="status-select" onclick="event.stopPropagation();" onchange="updateStatus(\'' + job.id + '\', this.value)">';
+      for (var i = 0; i < statusOptions.length; i++) {
+        var s = statusOptions[i];
+        statusSelect += '<option value="' + s + '"' + (job.status === s ? ' selected' : '') + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
+      }
+      statusSelect += '</select>';
+
+      var html = '<div class="job-card" onclick="toggleExpand(this)" data-id="' + job.id + '">';
+      html += '<div class="job-card-header"><div>';
+      html += '<div class="job-title">' + esc(job.title) + '</div>';
+      html += '<div class="job-company">' + esc(job.company || 'Unknown company') + '</div>';
+      html += '</div>';
+      html += '<div class="job-badges">';
+      html += '<span class="badge ' + modeClass + '">' + job.work_mode + '</span>';
+      html += '<span class="badge ' + senClass + '">' + job.seniority_match + '</span>';
+      html += '<span class="badge ' + sourceClass + '">' + job.source + '</span>';
+      html += statusSelect;
+      html += '</div></div>';
+
+      if (job.location) {
+        html += '<div class="job-location">' + esc(job.location) + '</div>';
+      }
+
+      if (job.salary_range) {
+        html += '<div class="salary-tag">' + esc(job.salary_range) + '</div>';
+      }
+
+      if (descSnippet) {
+        html += '<div class="job-description">' + esc(descSnippet) + '</div>';
+      }
+
+      html += '<div class="job-meta">';
+      html += '<span class="fit-score">Fit: ' + fitPct + '% <span class="fit-bar"><span class="fit-bar-fill ' + fitClass + '" style="width:' + fitPct + '%"></span></span></span>';
+      html += '<span>Stack: ' + stackPct + '%</span>';
+      html += '<span class="badge urgency-' + job.urgency + '" style="font-size:11px">' + job.urgency + '</span>';
+      html += '<span>Found: ' + foundDate + '</span>';
+      html += '</div>';
+
+      // Expanded detail
+      html += '<div class="job-detail">';
+
+      if (job.reasoning) {
+        html += '<div class="job-detail-section"><h4>Reasoning</h4><p>' + esc(job.reasoning) + '</p></div>';
+      }
+
+      if (job.job_description) {
+        html += '<div class="job-detail-section"><h4>Full Description</h4><p>' + esc(job.job_description) + '</p></div>';
+      }
+
+      if (job.post_content) {
+        html += '<div class="job-detail-section"><h4>Original Post' + (job.poster_name ? ' by ' + esc(job.poster_name) : '') + '</h4>';
+        html += '<pre>' + esc(job.post_content) + '</pre></div>';
+      }
+
+      if (job.draft_message) {
+        html += '<div class="job-detail-section"><h4>Draft Message</h4>';
+        html += '<pre id="draft-' + job.id + '">' + esc(job.draft_message) + '</pre></div>';
+      }
+
+      // Recruiter / Contact info
+      if (job.recruiter_name || job.recruiter_email || job.recruiter_url) {
+        html += '<div class="job-detail-section"><h4>Recruiter / Contact</h4><p>';
+        if (job.recruiter_name) html += '<strong>' + esc(job.recruiter_name) + '</strong>';
+        if (job.recruiter_email) html += ' &mdash; <a href="mailto:' + esc(job.recruiter_email) + '" onclick="event.stopPropagation();" style="color:var(--accent-light)">' + esc(job.recruiter_email) + '</a>';
+        if (job.recruiter_url) html += ' &mdash; <a href="' + absUrl(job.recruiter_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--accent-light)">Profile</a>';
+        html += '</p></div>';
+      }
+
+      // Notes
+      html += '<div class="job-detail-section"><h4>Notes</h4>';
+      html += '<textarea class="notes-area" id="notes-' + job.id + '" onclick="event.stopPropagation();" placeholder="Add notes...">' + esc(job.notes || '') + '</textarea>';
+      html += '<button class="notes-save" onclick="event.stopPropagation(); saveNotes(\'' + job.id + '\')">Save Notes</button>';
+      html += '</div>';
+
+      // Actions
+      html += '<div class="job-actions">';
+      if (job.apply_url) {
+        html += '<a href="' + absUrl(job.apply_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="background:var(--accent);border-color:var(--accent);color:white">Apply Now</a>';
+      }
+      if (job.draft_message) {
+        html += '<button class="copy-btn" onclick="event.stopPropagation(); copyDraft(\'' + job.id + '\')">Copy Draft</button>';
+      }
+      if (job.job_url) {
+        html += '<a href="' + absUrl(job.job_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();">Open Job</a>';
+      }
+      if (job.post_url) {
+        html += '<a href="' + absUrl(job.post_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();">View Post</a>';
+      }
+      if (job.poster_url) {
+        html += '<a href="' + absUrl(job.poster_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();">Poster Profile</a>';
+      }
+      if (job.recruiter_url && job.recruiter_url !== job.poster_url) {
+        html += '<a href="' + absUrl(job.recruiter_url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();">Recruiter</a>';
+      }
+      html += '</div>';
+
+      html += '</div>'; // job-detail
+      html += '</div>'; // job-card
+
+      return html;
+    }
+
+    function toggleExpand(card) {
+      card.classList.toggle('expanded');
+    }
+
+    async function updateStatus(id, status) {
+      try {
+        await fetch(API + '/jobs/' + id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: status }),
+        });
+        loadStats();
+      } catch (err) {
+        console.error('Failed to update status:', err);
+      }
+    }
+
+    async function saveNotes(id) {
+      var textarea = document.getElementById('notes-' + id);
+      if (!textarea) return;
+      try {
+        await fetch(API + '/jobs/' + id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes: textarea.value }),
+        });
+        var btn = textarea.nextElementSibling;
+        if (btn) {
+          btn.textContent = 'Saved!';
+          setTimeout(function() { btn.textContent = 'Save Notes'; }, 1500);
+        }
+      } catch (err) {
+        console.error('Failed to save notes:', err);
+      }
+    }
+
+    function copyDraft(id) {
+      var pre = document.getElementById('draft-' + id);
+      if (pre) {
+        navigator.clipboard.writeText(pre.textContent).then(function() {
+          var card = pre.closest('.job-card');
+          var btn = card ? card.querySelector('.copy-btn') : null;
+          if (btn) {
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = 'Copy Draft'; }, 1500);
+          }
+        });
+      }
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function absUrl(url) {
+      if (!url) return '';
+      if (url.indexOf('http') === 0) return url;
+      if (url.indexOf('/jobs/') === 0 || url.indexOf('/in/') === 0 || url.indexOf('/feed/') === 0) {
+        return 'https://www.linkedin.com' + url;
+      }
+      if (url.indexOf('/job-listings-') === 0) {
+        return 'https://www.naukri.com' + url;
+      }
+      if (url.indexOf('/j/') === 0 || url.indexOf('/s/') === 0) {
+        return 'https://www.hirist.tech' + url;
+      }
+      if (url.indexOf('/') === 0) {
+        return 'https://www.linkedin.com' + url;
+      }
+      return url;
+    }
+
+    // Filter handling
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var filterType = btn.dataset.filter;
+        var value = btn.dataset.value;
+
+        btn.closest('.filter-group').querySelectorAll('.filter-btn').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+
+        currentFilters[filterType] = value;
+        loadJobs();
+      });
+    });
+
+    // Exports
+    function exportQueryString() {
+      var params = new URLSearchParams();
+      if (currentFilters.status) params.set('status', currentFilters.status);
+      if (currentFilters.work_mode) params.set('work_mode', currentFilters.work_mode);
+      if (currentFilters.urgency) params.set('urgency', currentFilters.urgency);
+      return params.toString();
+    }
+
+    function exportCSV() {
+      window.location.href = API + '/jobs/export/csv?' + exportQueryString();
+    }
+
+    function exportHTML() {
+      window.location.href = API + '/jobs/export/html?' + exportQueryString();
+    }
+
+    // Initial load
+    loadStats();
+    loadJobs();
+  </script>
+</body>
+</html>

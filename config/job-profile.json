@@ -1,0 +1,27 @@
+{
+  "years_of_experience": 8,
+  "tech_stack": {
+    "primary": ["Node.js", "TypeScript", "React", "Next.js", "Python"],
+    "secondary": ["NestJS", "MongoDB", "PostgreSQL", "SQL"]
+  },
+  "target_roles": [
+    "Senior Software Developer",
+    "Senior Fullstack Engineer",
+    "Lead Backend Engineer",
+    "Lead Frontend Engineer",
+    "Staff Engineer"
+  ],
+  "seniority_range": ["Senior", "Lead", "Staff"],
+  "location": {
+    "country": "India",
+    "eligible_for": ["India", "Remote (Global)", "Remote (India)", "Remote (APAC)"],
+    "preferred_cities": ["Bangalore", "Hyderabad", "Pune", "Mumbai", "Delhi NCR", "Chennai"],
+    "notes": "Must be hiring in India OR remote-eligible for India-based candidates. Skip jobs restricted to US/EU/UK only."
+  },
+  "work_preferences": {
+    "remote_ok": true,
+    "hybrid_ok": true,
+    "onsite_ok": true,
+    "onsite_cities": ["Bangalore"]
+  }
+}

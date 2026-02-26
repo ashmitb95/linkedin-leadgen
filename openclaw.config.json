@@ -1,0 +1,14 @@
+{
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "openclaw",
+    "profiles": {
+      "openclaw": {
+        "cdpPort": 18800
+      }
+    }
+  },
+  "cron": {
+    "enabled": true
+  }
+}

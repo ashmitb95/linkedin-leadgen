@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Lead Gen Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-bar" style="display:flex;gap:16px;margin-bottom:16px">
+      <a href="/" style="font-size:13px;color:#818cf8;text-decoration:none;padding:4px 0;border-bottom:2px solid #818cf8">Leads</a>
+      <a href="/jobs" style="font-size:13px;color:#9ca3af;text-decoration:none;padding:4px 0;border-bottom:2px solid transparent">Job Search</a>
+    </nav>
+    <header>
+      <h1><span>LinkedIn</span> Lead Gen Dashboard</h1>
+      <div class="header-actions">
+        <button onclick="loadStats(); loadLeads();">Refresh</button>
+        <button onclick="exportCSV()" class="export-btn">Export CSV</button>
+        <button onclick="exportHTML()" class="export-btn export-html">Export Report</button>
+      </div>
+    </header>
+
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="label">Total Leads</div>
+        <div class="value" id="stat-total">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">New Today</div>
+        <div class="value green" id="stat-today">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">New</div>
+        <div class="value blue" id="stat-new">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Contacted</div>
+        <div class="value yellow" id="stat-contacted">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Replied</div>
+        <div class="value green" id="stat-replied">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Archived</div>
+        <div class="value" id="stat-archived">-</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">Status:</span>
+        <button class="filter-btn active" data-filter="status" data-value="">All</button>
+        <button class="filter-btn" data-filter="status" data-value="new">New</button>
+        <button class="filter-btn" data-filter="status" data-value="contacted">Contacted</button>
+        <button class="filter-btn" data-filter="status" data-value="replied">Replied</button>
+        <button class="filter-btn" data-filter="status" data-value="archived">Archived</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Tier:</span>
+        <button class="filter-btn active" data-filter="tier" data-value="">All</button>
+        <button class="filter-btn" data-filter="tier" data-value="1">T1 Freelance</button>
+        <button class="filter-btn" data-filter="tier" data-value="2">T2 Product</button>
+        <button class="filter-btn" data-filter="tier" data-value="3">T3 AI Scale</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Urgency:</span>
+        <button class="filter-btn active" data-filter="urgency" data-value="">All</button>
+        <button class="filter-btn" data-filter="urgency" data-value="high">High</button>
+        <button class="filter-btn" data-filter="urgency" data-value="medium">Medium</button>
+        <button class="filter-btn" data-filter="urgency" data-value="low">Low</button>
+      </div>
+    </div>
+
+    <div class="leads-grid" id="leads-grid">
+      <div class="loading">Loading leads...</div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    let currentFilters = { status: '', tier: '', urgency: '' };
+
+    // Stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/stats`);
+        const stats = await res.json();
+        document.getElementById('stat-total').textContent = stats.total_leads;
+        document.getElementById('stat-today').textContent = stats.today_new;
+        document.getElementById('stat-new').textContent = stats.new_leads;
+        document.getElementById('stat-contacted').textContent = stats.contacted;
+        document.getElementById('stat-replied').textContent = stats.replied;
+        document.getElementById('stat-archived').textContent = stats.archived;
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    // Leads
+    async function loadLeads() {
+      const grid = document.getElementById('leads-grid');
+      grid.innerHTML = '<div class="loading">Loading leads...</div>';
+
+      try {
+        const params = new URLSearchParams();
+        if (currentFilters.status) params.set('status', currentFilters.status);
+        if (currentFilters.tier) params.set('tier', currentFilters.tier);
+        if (currentFilters.urgency) params.set('urgency', currentFilters.urgency);
+
+        const res = await fetch(`${API}/leads?${params}`);
+        const data = await res.json();
+
+        if (data.leads.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <h3>No leads found</h3>
+              <p>Run the linkedin-leadgen skill to start finding leads, or adjust your filters.</p>
+            </div>`;
+          return;
+        }
+
+        grid.innerHTML = data.leads.map(lead => renderLeadCard(lead)).join('');
+      } catch (err) {
+        grid.innerHTML = `<div class="empty-state"><h3>Error loading leads</h3><p>${err.message}</p></div>`;
+      }
+    }
+
+    function renderLeadCard(lead) {
+      const tierLabel = lead.tier === 1 ? 'T1 Freelance' : lead.tier === 2 ? 'T2 Product' : 'T3 AI Scale';
+      const tierClass = `tier-${lead.tier}`;
+      const urgencyClass = `urgency-${lead.urgency}`;
+      const postSnippet = lead.post_content
+        ? lead.post_content.slice(0, 150) + (lead.post_content.length > 150 ? '...' : '')
+        : 'No post content captured';
+      const relevancePct = Math.round(lead.relevance * 100);
+      const foundDate = lead.found_at ? new Date(lead.found_at).toLocaleDateString() : '';
+
+      return `
+        <div class="lead-card" onclick="toggleExpand(this)" data-id="${lead.id}">
+          <div class="lead-card-header">
+            <div>
+              <div class="lead-name">${esc(lead.name)}</div>
+              <div class="lead-company">${esc(lead.company || 'Unknown company')}</div>
+            </div>
+            <div class="lead-badges">
+              <span class="badge ${tierClass}">${tierLabel}</span>
+              <span class="badge ${urgencyClass}">${lead.urgency}</span>
+              <select class="status-select" onclick="event.stopPropagation();" onchange="updateStatus('${lead.id}', this.value)">
+                <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+                <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                <option value="replied" ${lead.status === 'replied' ? 'selected' : ''}>Replied</option>
+                <option value="archived" ${lead.status === 'archived' ? 'selected' : ''}>Archived</option>
+              </select>
+            </div>
+          </div>
+          ${lead.headline ? `<div class="lead-headline">${esc(lead.headline)}</div>` : ''}
+          <div class="lead-post">"${esc(postSnippet)}"</div>
+          <div class="lead-meta">
+            <span>Relevance: ${relevancePct}% <span class="relevance-bar"><span class="relevance-bar-fill" style="width:${relevancePct}%"></span></span></span>
+            <span>Found: ${foundDate}</span>
+            ${lead.keyword_match ? `<span>Keyword: ${esc(lead.keyword_match.slice(0, 40))}...</span>` : ''}
+          </div>
+
+          <div class="lead-detail">
+            ${lead.post_content ? `
+            <div class="lead-detail-section">
+              <h4>Full Post</h4>
+              <p>${esc(lead.post_content)}</p>
+            </div>` : ''}
+
+            ${lead.draft_message ? `
+            <div class="lead-detail-section">
+              <h4>Draft Message</h4>
+              <pre id="draft-${lead.id}">${esc(lead.draft_message)}</pre>
+            </div>` : ''}
+
+            <div class="lead-actions">
+              ${lead.draft_message ? `<button class="copy-btn" onclick="event.stopPropagation(); copyDraft('${lead.id}')">Copy Draft</button>` : ''}
+              ${lead.profile_url ? `<a href="${esc(lead.profile_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();">Open LinkedIn</a>` : ''}
+              ${lead.post_url ? `<a href="${esc(lead.post_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();">View Post</a>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggleExpand(card) {
+      card.classList.toggle('expanded');
+    }
+
+    async function updateStatus(id, status) {
+      try {
+        await fetch(`${API}/leads/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        loadStats();
+      } catch (err) {
+        console.error('Failed to update status:', err);
+      }
+    }
+
+    function copyDraft(id) {
+      const pre = document.getElementById(`draft-${id}`);
+      if (pre) {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = pre.closest('.lead-detail').querySelector('.copy-btn');
+          if (btn) {
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = 'Copy Draft'; }, 1500);
+          }
+        });
+      }
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Filter handling
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterType = btn.dataset.filter;
+        const value = btn.dataset.value;
+
+        // Update active state within group
+        btn.closest('.filter-group').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        currentFilters[filterType] = value;
+        loadLeads();
+      });
+    });
+
+    // Exports
+    function exportQueryString() {
+      const params = new URLSearchParams();
+      if (currentFilters.status) params.set('status', currentFilters.status);
+      if (currentFilters.tier) params.set('tier', currentFilters.tier);
+      if (currentFilters.urgency) params.set('urgency', currentFilters.urgency);
+      return params.toString();
+    }
+
+    function exportCSV() {
+      window.location.href = `${API}/export/csv?${exportQueryString()}`;
+    }
+
+    function exportHTML() {
+      window.location.href = `${API}/export/html?${exportQueryString()}`;
+    }
+
+    // Initial load
+    loadStats();
+    loadLeads();
+  </script>
+</body>
+</html>

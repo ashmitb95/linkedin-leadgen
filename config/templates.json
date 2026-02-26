@@ -1,0 +1,15 @@
+{
+  "tier1": {
+    "label": "Quick Cash — Freelance/Contract",
+    "template": "Hey {{name}}, saw your post about {{topic}}. My partner and I run a small dev + digital marketing studio — we specifically work with founders and small teams who need things built fast without enterprise agency pricing. Happy to chat if you're still exploring options."
+  },
+  "tier2": {
+    "label": "Product Build — Project-Based",
+    "template": "Hey {{name}}, saw your post about {{topic}}. We're a two-person engineering team that helps founders and small companies go from idea to shipped product — MVPs, web apps, mobile apps, the works. We move fast and keep costs reasonable. If you're still looking for help, happy to jump on a quick call."
+  },
+  "tier3": {
+    "label": "AI Founder Scale-Up — Premium",
+    "template": "Hey {{name}}, saw your post about {{topic}}. My partner and I are engineers who specifically work with non-technical founders hitting that scaling wall — moving off no-code, building proper infra, cleaning up architecture so it doesn't break at 10x users. Happy to jump on a quick call if you want to talk through what you're dealing with."
+  },
+  "instructions": "Use these templates as a starting point but personalize each message based on the specific post content, the lead's company, and their apparent pain point. Keep messages to 3-4 sentences max. End with a soft CTA."
+}

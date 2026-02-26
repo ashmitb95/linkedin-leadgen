@@ -1,0 +1,81 @@
+{
+  "content_search": {
+    "description": "LinkedIn content search — finds posts where people/companies announce hiring",
+    "keywords": [
+      "hiring senior fullstack engineer",
+      "hiring senior software developer",
+      "hiring lead backend engineer",
+      "hiring staff engineer Node.js",
+      "hiring senior developer React TypeScript",
+      "looking for senior fullstack developer",
+      "we are hiring Node.js developer",
+      "open position senior engineer",
+      "hiring senior developer remote",
+      "join our team senior engineer",
+      "startup hiring senior developer",
+      "engineering team growing hiring senior",
+      "hiring lead frontend engineer React",
+      "senior backend developer NestJS",
+      "fullstack engineer TypeScript MongoDB"
+    ],
+    "max_per_run": 8,
+    "max_scrolls": 6
+  },
+  "jobs_search": {
+    "description": "LinkedIn Jobs search — structured job listings",
+    "keywords": [
+      "Senior Fullstack Engineer",
+      "Senior Software Developer",
+      "Lead Backend Engineer Node.js",
+      "Staff Engineer TypeScript",
+      "Senior React Developer",
+      "Lead Frontend Engineer"
+    ],
+    "max_per_run": 4,
+    "max_scrolls": 8,
+    "filters": {
+      "date_posted": "past_week",
+      "experience_level": "senior",
+      "remote": true
+    }
+  },
+  "naukri": {
+    "description": "Naukri.com — India's largest job board",
+    "enabled": true,
+    "keywords": [
+      "Senior Fullstack Developer",
+      "Senior Node.js Developer",
+      "Lead Backend Engineer",
+      "Senior React Developer",
+      "Staff Engineer",
+      "Senior Software Engineer TypeScript"
+    ],
+    "max_per_run": 4,
+    "max_scrolls": 4,
+    "filters": {
+      "experience": "5-15",
+      "sort_by": "date"
+    }
+  },
+  "hirist": {
+    "description": "Hirist.tech — Tech-focused job board for India. Keywords are category slugs from hirist.tech/c/",
+    "enabled": true,
+    "keywords": [
+      "full-stack-jobs",
+      "backend-development-jobs",
+      "frontend-development-jobs",
+      "nodejs-jobs",
+      "react-jobs",
+      "python-jobs"
+    ],
+    "max_per_run": 3,
+    "max_scrolls": 3
+  },
+  "search_delay_ms": 5000,
+  "quick": {
+    "description": "Settings used with --quick flag for smoke tests",
+    "max_per_run": 1,
+    "max_scrolls": 2,
+    "search_delay_ms": 2000
+  }
+}
