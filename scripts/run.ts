@@ -16,6 +16,9 @@
  *   npx tsx scripts/run.ts --salesnav-only    # Only Sales Nav search
  */
 
+import { loadEnv } from "./env.js";
+loadEnv();
+
 import { chromium } from "playwright";
 import { readFileSync } from "fs";
 import path from "path";

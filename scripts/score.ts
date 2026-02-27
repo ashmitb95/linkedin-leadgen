@@ -9,6 +9,9 @@
  *   npx tsx scripts/score.ts --file leads.json   # Re-score from file
  */
 
+import { loadEnv } from "./env.js";
+loadEnv();
+
 import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync } from "fs";
 import { getLeads } from "./db.js";

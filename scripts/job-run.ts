@@ -7,7 +7,7 @@
  *   3. Naukri.com — India's largest job board
  *   4. Hirist.tech — Tech-focused India job board
  *
- * Usage:
+ * Usage (see below):
  *   npx tsx scripts/job-run.ts                    # Full run (all sources)
  *   npx tsx scripts/job-run.ts --quick            # Smoke test (1 keyword/source, 2 scrolls)
  *   npx tsx scripts/job-run.ts --max 2            # Limit searches per source
@@ -20,6 +20,9 @@
  *   npx tsx scripts/job-run.ts --boards-only      # Only Naukri + Hirist
  *   npx tsx scripts/job-run.ts --linkedin-only    # Only LinkedIn (content + jobs)
  */
+
+import { loadEnv } from "./env.js";
+loadEnv();
 
 import { chromium } from "playwright";
 import { readFileSync } from "fs";

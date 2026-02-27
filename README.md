@@ -145,55 +145,38 @@ Defines your tech stack, target roles, seniority, and location preferences. Used
 ### Lead Generation Pipeline
 
 ```bash
-# Full run — content search + Sales Navigator
-npm run run
-
-# Test mode — single keyword
-npm run run:test
-
-# Re-score existing leads
-npm run score
-
-# Daily digest
-npm run digest
+npm run lead:run              # Full run — content + Sales Navigator
+npm run lead:run:test         # Test mode — single keyword
+npm run lead:run:content      # Content search only
+npm run lead:run:salesnav     # Sales Navigator only
+npm run lead:score            # Re-score existing leads
+npm run lead:digest           # Daily digest
 ```
 
 **CLI flags:**
 ```bash
 npx tsx scripts/run.ts --max 2              # Limit searches per mode
 npx tsx scripts/run.ts --keyword "test"     # Single keyword test
-npx tsx scripts/run.ts --content-only       # LinkedIn content search only
-npx tsx scripts/run.ts --salesnav-only      # Sales Navigator only
 ```
 
 ### Job Search Pipeline
 
 ```bash
-# Full run — all 4 sources
-npm run job:run
-
-# Quick smoke test (1 keyword per source, 2 scrolls)
-npm run job:quick
-
-# Individual sources
-npm run job:run:linkedin    # LinkedIn content + jobs
-npm run job:run:naukri      # Naukri.com only
-npm run job:run:hirist      # Hirist.tech only
-npm run job:run:boards      # Naukri + Hirist
+npm run job:run               # Full run — all 4 sources
+npm run job:run:quick         # Smoke test (1 keyword/source, 2 scrolls)
+npm run job:run:test          # Single content keyword test
+npm run job:run:linkedin      # LinkedIn content + jobs
+npm run job:run:naukri        # Naukri.com only
+npm run job:run:hirist        # Hirist.tech only
+npm run job:run:boards        # Naukri + Hirist
+npm run job:digest            # Daily digest
 ```
 
 **CLI flags:**
 ```bash
-npx tsx scripts/job-run.ts --quick              # Smoke test mode
 npx tsx scripts/job-run.ts --max 2              # Limit keywords per source
 npx tsx scripts/job-run.ts --scrolls 10         # Override scroll depth
 npx tsx scripts/job-run.ts --keyword "test"     # Single keyword
-npx tsx scripts/job-run.ts --content-only       # LinkedIn hiring posts only
-npx tsx scripts/job-run.ts --jobs-only          # LinkedIn job listings only
-npx tsx scripts/job-run.ts --naukri-only        # Naukri.com only
-npx tsx scripts/job-run.ts --hirist-only        # Hirist.tech only
-npx tsx scripts/job-run.ts --boards-only        # Indian job boards only
-npx tsx scripts/job-run.ts --linkedin-only      # LinkedIn sources only
 ```
 
 ### Dashboard
@@ -219,13 +202,10 @@ npm run dev
 ### Database Management
 
 ```bash
-# Lead database
-npm run db:init       # Create tables
-npm run db:stats      # Print statistics
-
-# Job database
-npm run job:db:init   # Create tables
-npm run job:db:stats  # Print statistics
+npm run lead:db:init      # Initialize lead tables
+npm run lead:db:stats     # Lead statistics
+npm run job:db:init       # Initialize job tables
+npm run job:db:stats      # Job statistics
 ```
 
 ## API Reference
