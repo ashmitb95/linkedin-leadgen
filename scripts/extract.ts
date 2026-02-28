@@ -181,12 +181,19 @@ Then score each lead for a 2-person software engineering + digital marketing stu
 - Tier 1: Freelance/contract — websites, landing pages, bug fixes, SEO. $500-$5K.
 - Tier 2: Product builds — MVPs, web apps, mobile apps. $5K-$30K+.
 - Tier 3: AI founder scale-up — moving off no-code, proper infra, fractional CTO. $10K-$50K+.
+- Tier 4: Branding & Packaging — brand identity, logo design, packaging design, visual systems for CPG/DTC brands. $2K-$15K.
 
-**Ideal clients:** Founders, small biz owners (1-50 employees), non-technical AI builders.
+**Ideal clients:** Founders, small biz owners (1-50 employees), non-technical AI builders, CPG/DTC brand owners, food/beauty/wellness startup founders.
 **NOT clients:** Large enterprises (500+), casual chat, recruiters, spam, ads.
 
+**STALE POST DETECTION:**
+Check the card text for indicators the need has been fulfilled or the post is outdated:
+- Comment snippets: "position filled", "found someone", "no longer looking", "hired someone", "closed", "sorted this out", "all set now"
+- Poster updates: "Edit:", "Update:" followed by closure language
+If ANY stale indicators are found: set relevance to 0.1, urgency to "low", and prefix reasoning with "STALE: [indicator found]"
+
 For each lead:
-- **tier** (1, 2, or 3)
+- **tier** (1, 2, 3, or 4)
 - **relevance** (0.0-1.0) — 0.8+ strong, 0.5-0.8 maybe, below 0.3 skip
 - **urgency** — "high" (actively looking for help), "medium" (discussing pain), "low" (tangential)
 - **draftMessage** — Personalized 3-4 sentence DM. Reference their post. Soft CTA.
@@ -217,12 +224,13 @@ Then score each lead for a 2-person software engineering + digital marketing stu
 - Tier 1: Freelance/contract — websites, landing pages, bug fixes, SEO. $500-$5K.
 - Tier 2: Product builds — MVPs, web apps, mobile apps. $5K-$30K+.
 - Tier 3: AI founder scale-up — moving off no-code, proper infra, fractional CTO. $10K-$50K+.
+- Tier 4: Branding & Packaging — brand identity, logo design, packaging design, visual systems for CPG/DTC brands. $2K-$15K.
 
-**Ideal clients:** Founders, small biz owners (1-50 employees), non-technical AI builders, solo entrepreneurs.
+**Ideal clients:** Founders, small biz owners (1-50 employees), non-technical AI builders, solo entrepreneurs, CPG/DTC brand owners, food/beauty/wellness startup founders.
 **NOT clients:** Large enterprises (500+), recruiters, job seekers, students, engineers/developers (they ARE developers, not clients).
 
 Score based on their PROFILE (headline, company, role) — not post content:
-- **tier** (1, 2, or 3) — infer from their role/company
+- **tier** (1, 2, 3, or 4) — infer from their role/company. CPG/DTC brand founders = Tier 4.
 - **relevance** (0.0-1.0) — how well they match our ICP. Founders/owners of small companies = high. Developers/engineers = 0.0.
 - **urgency** — "low" for all (profile match only, no active buying signal)
 - **draftMessage** — Personalized 3-4 sentence cold DM. Reference their company/role. Soft CTA offering to help.

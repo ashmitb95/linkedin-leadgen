@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Search Dashboard</title>
+  <title>Anusha — Job Search Dashboard</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     /* Job-specific styles */
@@ -213,12 +213,12 @@
   <div class="container">
     <nav class="nav-bar">
       <a href="/">Leads</a>
-      <a href="/jobs" class="active">Job Search</a>
-      <a href="/anusha">Anusha's Jobs</a>
+      <a href="/jobs">Job Search</a>
+      <a href="/anusha" class="active">Anusha's Jobs</a>
     </nav>
 
     <header>
-      <h1><span>Job</span> Search Dashboard</h1>
+      <h1><span>Anusha</span> Job Search</h1>
       <div class="header-actions">
         <button onclick="loadStats(); loadJobs();">Refresh</button>
         <button onclick="exportCSV()" class="export-btn">Export CSV</button>
@@ -297,7 +297,7 @@
     // Stats
     async function loadStats() {
       try {
-        var res = await fetch(API + '/job-stats');
+        var res = await fetch(API + '/anusha-job-stats');
         var stats = await res.json();
         document.getElementById('stat-total').textContent = stats.total_jobs;
         document.getElementById('stat-today').textContent = stats.today_new;
@@ -322,11 +322,11 @@
         if (currentFilters.work_mode) params.set('work_mode', currentFilters.work_mode);
         if (currentFilters.urgency) params.set('urgency', currentFilters.urgency);
 
-        var res = await fetch(API + '/jobs?' + params);
+        var res = await fetch(API + '/anusha-jobs?' + params);
         var data = await res.json();
 
         if (data.jobs.length === 0) {
-          grid.innerHTML = '<div class="empty-state"><h3>No jobs found</h3><p>Run the job search pipeline to find jobs, or adjust your filters.</p></div>';
+          grid.innerHTML = '<div class="empty-state"><h3>No jobs found</h3><p>Run Anusha\'s job search pipeline to find jobs, or adjust your filters.</p></div>';
           return;
         }
 
@@ -457,7 +457,7 @@
 
     async function updateStatus(id, status) {
       try {
-        await fetch(API + '/jobs/' + id, {
+        await fetch(API + '/anusha-jobs/' + id, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: status }),
@@ -472,7 +472,7 @@
       var textarea = document.getElementById('notes-' + id);
       if (!textarea) return;
       try {
-        await fetch(API + '/jobs/' + id, {
+        await fetch(API + '/anusha-jobs/' + id, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notes: textarea.value }),
@@ -552,11 +552,11 @@
     }
 
     function exportCSV() {
-      window.location.href = API + '/jobs/export/csv?' + exportQueryString();
+      window.location.href = API + '/anusha-jobs/export/csv?' + exportQueryString();
     }
 
     function exportHTML() {
-      window.location.href = API + '/jobs/export/html?' + exportQueryString();
+      window.location.href = API + '/anusha-jobs/export/html?' + exportQueryString();
     }
 
     // Initial load

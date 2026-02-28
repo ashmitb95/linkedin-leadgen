@@ -11,5 +11,9 @@
     "label": "AI Founder Scale-Up — Premium",
     "template": "Hey {{name}}, saw your post about {{topic}}. My partner and I are engineers who specifically work with non-technical founders hitting that scaling wall — moving off no-code, building proper infra, cleaning up architecture so it doesn't break at 10x users. Happy to jump on a quick call if you want to talk through what you're dealing with."
   },
+  "tier4": {
+    "label": "Branding & Packaging",
+    "template": "Hey {{name}}, saw your post about {{topic}}. My partner and I run a design studio that helps product companies with branding and packaging — brand identity, packaging design, visual systems, the works. We work with founders and small teams who want standout design without big agency pricing. Happy to chat if you're still exploring options."
+  },
   "instructions": "Use these templates as a starting point but personalize each message based on the specific post content, the lead's company, and their apparent pain point. Keep messages to 3-4 sentences max. End with a soft CTA."
 }

@@ -1,0 +1,35 @@
+{
+  "name": "Anusha",
+  "years_of_experience": 4,
+  "education": "MBA in Life Sciences",
+  "domain": ["Life Sciences", "Pharma", "Biotech", "Healthcare", "MedTech"],
+  "skills": {
+    "primary": ["Business Development", "Strategic Planning", "Market Analysis", "Product Management", "Brand Management"],
+    "secondary": ["Regulatory Awareness", "Clinical Research Knowledge", "Healthcare Consulting", "Key Account Management", "Medical Affairs Coordination", "Pharmaceutical Marketing"]
+  },
+  "target_roles": [
+    "Business Development Manager",
+    "Product Manager - Pharma",
+    "Brand Manager - Healthcare",
+    "Strategy Consultant - Life Sciences",
+    "BD Manager - Biotech",
+    "Healthcare Consultant",
+    "Licensing & Partnerships Manager",
+    "Marketing Manager - Pharma",
+    "Associate Director - Commercial",
+    "Medical Science Liaison"
+  ],
+  "seniority_range": ["Manager", "Senior Manager", "Associate Director"],
+  "location": {
+    "country": "India",
+    "eligible_for": ["India", "Remote (Global)", "Remote (India)", "Remote (APAC)"],
+    "preferred_cities": ["Bangalore", "Mumbai", "Hyderabad", "Pune", "Delhi NCR", "Chennai"],
+    "notes": "Must be hiring in India OR remote-eligible for India-based candidates. Skip jobs restricted to US/EU/UK only."
+  },
+  "work_preferences": {
+    "remote_ok": true,
+    "hybrid_ok": true,
+    "onsite_ok": true,
+    "onsite_cities": ["Bangalore", "Mumbai", "Hyderabad"]
+  }
+}

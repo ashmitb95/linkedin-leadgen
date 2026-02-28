@@ -25,7 +25,18 @@
     "job:run:naukri": "tsx scripts/job-run.ts --naukri-only",
     "job:run:hirist": "tsx scripts/job-run.ts --hirist-only",
     "job:run:boards": "tsx scripts/job-run.ts --boards-only",
-    "job:digest": "tsx scripts/job-digest.ts"
+    "job:digest": "tsx scripts/job-digest.ts",
+
+    "anusha:db:init": "tsx scripts/anusha-job-digest.ts init",
+    "anusha:db:stats": "tsx scripts/anusha-job-digest.ts stats",
+    "anusha:run": "tsx scripts/anusha-job-run.ts",
+    "anusha:run:quick": "tsx scripts/anusha-job-run.ts --quick",
+    "anusha:run:test": "tsx scripts/anusha-job-run.ts --content-only --max 1",
+    "anusha:run:linkedin": "tsx scripts/anusha-job-run.ts --linkedin-only",
+    "anusha:run:naukri": "tsx scripts/anusha-job-run.ts --naukri-only",
+    "anusha:run:hirist": "tsx scripts/anusha-job-run.ts --hirist-only",
+    "anusha:run:boards": "tsx scripts/anusha-job-run.ts --boards-only",
+    "anusha:digest": "tsx scripts/anusha-job-digest.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

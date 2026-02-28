@@ -1,9 +1,8 @@
 /**
  * job-extract.ts — DOM extraction + Claude scoring for job search pipeline.
  *
- * Two modes:
- *   - content: Hiring announcement posts on LinkedIn
- *   - jobs: Structured job listings from LinkedIn Jobs
+ * Supports custom profiles via optional parameter to extractAndScoreJobs().
+ * Default uses config/job-profile.json for backward compatibility.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -12,8 +11,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROFILE_PATH = path.join(__dirname, "..", "config", "job-profile.json");
-const profile = JSON.parse(readFileSync(PROFILE_PATH, "utf-8"));
+const DEFAULT_PROFILE_PATH = path.join(__dirname, "..", "config", "job-profile.json");
+const defaultProfile = JSON.parse(readFileSync(DEFAULT_PROFILE_PATH, "utf-8"));
 
 export interface ScoredJob {
   title: string;
@@ -41,9 +40,10 @@ export interface ScoredJob {
   keywordMatch: string;
 }
 
-// ───── Scoring Prompts ─────
+// ───── Prompt Builders ─────
 
-const HIRING_POST_PROMPT = `You are parsing structured text blocks extracted from LinkedIn content search results. Each block represents a post where someone is announcing a job opening or sharing that their company is hiring.
+function buildHiringPostPrompt(profile: any): string {
+  return `You are parsing structured text blocks extracted from LinkedIn content search results. Each block represents a post where someone is announcing a job opening or sharing that their company is hiring.
 
 Each block has:
 - profileUrl: the poster's LinkedIn profile URL
@@ -72,11 +72,11 @@ From each block, extract:
 - **postUrl**: If any link points to a feed/activity URL, use it. Otherwise ""
 
 Then score each job against the candidate profile:
-- **fitScore** (0.0-1.0): Overall match. Consider tech stack overlap, seniority match, work mode, AND location eligibility.
-  - 0.8+ = strong match (most required tech matches, right seniority, India-eligible)
-  - 0.5-0.8 = partial match (some tech overlap or adjacent seniority)
+- **fitScore** (0.0-1.0): Overall match. Consider skill/domain overlap, seniority match, work mode, AND location eligibility.
+  - 0.8+ = strong match (most required skills match, right seniority, India-eligible)
+  - 0.5-0.8 = partial match (some overlap or adjacent seniority)
   - Below 0.3 = poor match (skip)
-- **stackMatch** (0.0-1.0): Fraction of the job's required technologies the candidate knows
+- **stackMatch** (0.0-1.0): Fraction of the job's required skills/domain knowledge the candidate has
 - **seniorityMatch**: "exact" (matches target roles), "close" (one level off), "mismatch"
 - **urgency**: "high" (urgently hiring, immediate start, few applicants), "medium" (standard), "low" (vague or future)
 - **reasoning**: One sentence explaining the score. Mention location eligibility.
@@ -94,14 +94,16 @@ SKIP jobs that are:
 
 OTHER FILTERS — Also skip:
 - Posts NOT about hiring (industry commentary, articles, etc.)
-- Roles requiring technologies the candidate has zero experience with
+- Roles requiring skills/domain knowledge the candidate has zero experience with
 - Roles clearly below seniority (junior, entry-level, intern, fresher)
 - Recruiting agency posts without naming the actual company
 
 Return ONLY a valid JSON array. No markdown, no code blocks.
 If no relevant jobs found, return: []`;
+}
 
-const JOB_LISTING_PROMPT = `You are parsing structured text blocks extracted from LinkedIn Jobs search results. Each block is a job listing card.
+function buildJobListingPrompt(profile: any): string {
+  return `You are parsing structured text blocks extracted from LinkedIn Jobs search results. Each block is a job listing card.
 
 Each block has:
 - jobUrl: the LinkedIn job listing URL
@@ -130,8 +132,8 @@ From each block, extract:
 - **postUrl**: ""
 
 Score each job against the candidate profile:
-- **fitScore** (0.0-1.0): Overall match considering title, visible tech clues, seniority, work mode, AND location eligibility
-- **stackMatch** (0.0-1.0): Estimated tech stack overlap from available info (may be limited)
+- **fitScore** (0.0-1.0): Overall match considering title, visible skill clues, seniority, work mode, AND location eligibility
+- **stackMatch** (0.0-1.0): Estimated skill/domain overlap from available info (may be limited)
 - **seniorityMatch**: "exact", "close", or "mismatch"
 - **urgency**: "high" (posted today/yesterday, "Actively recruiting"), "medium" (this week), "low" (older)
 - **reasoning**: One sentence. Mention location eligibility.
@@ -150,8 +152,11 @@ Job cards have limited description. Score based on what is visible; include Indi
 
 Return ONLY a valid JSON array. No markdown, no code blocks.
 If no relevant jobs found, return: []`;
+}
 
-const JOB_BOARD_PROMPT = `You are parsing structured text blocks extracted from an Indian job board (Naukri.com or Hirist.tech). Each block is a job listing card.
+function buildJobBoardPrompt(profile: any): string {
+  const yoe = profile.years_of_experience || 4;
+  return `You are parsing structured text blocks extracted from an Indian job board (Naukri.com or Hirist.tech). Each block is a job listing card.
 
 Each block has:
 - jobUrl: the job listing URL on the board
@@ -180,28 +185,32 @@ From each block, extract:
 - **postUrl**: ""
 
 Score each job against the candidate profile:
-- **fitScore** (0.0-1.0): Overall match considering title, tech stack overlap, seniority, experience range
+- **fitScore** (0.0-1.0): Overall match considering title, skill/domain overlap, seniority, experience range
 - **stackMatch** (0.0-1.0): Fraction of listed skills the candidate knows
-- **seniorityMatch**: "exact", "close", or "mismatch" based on experience range vs 8 YOE
+- **seniorityMatch**: "exact", "close", or "mismatch" based on experience range vs ${yoe} YOE
 - **urgency**: "high" (posted today/yesterday, "few applicants"), "medium" (this week), "low" (older)
 - **reasoning**: One sentence
 - **draftMessage**: "" (direct apply on these boards)
 
 All jobs on these boards are India-based, so no location filtering needed. Skip only:
-- Roles requiring technologies the candidate has zero experience with
+- Roles requiring skills/domain knowledge the candidate has zero experience with
 - Roles below seniority (junior, entry-level, 0-3 years)
 - Roles WAY above (VP, CTO, Director)
 
 Return ONLY a valid JSON array. No markdown, no code blocks.
 If no relevant jobs found, return: []`;
+}
 
 // ───── Scoring Function ─────
 
 export async function extractAndScoreJobs(
   blocksJson: string,
   keyword: string,
-  mode: "content" | "jobs" | "naukri" | "hirist" = "content"
+  mode: "content" | "jobs" | "naukri" | "hirist" = "content",
+  profileOverride?: any,
 ): Promise<ScoredJob[]> {
+  const profile = profileOverride || defaultProfile;
+
   let blocks: any[];
 
   try {
@@ -221,16 +230,16 @@ export async function extractAndScoreJobs(
 
   const truncatedBlocks = blocks.slice(0, 30);
   const prompt = mode === "naukri" || mode === "hirist"
-    ? JOB_BOARD_PROMPT
+    ? buildJobBoardPrompt(profile)
     : mode === "jobs"
-      ? JOB_LISTING_PROMPT
-      : HIRING_POST_PROMPT;
+      ? buildJobListingPrompt(profile)
+      : buildHiringPostPrompt(profile);
 
   const client = new Anthropic();
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    max_tokens: 8192,
     messages: [
       {
         role: "user",

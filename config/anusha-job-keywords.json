@@ -1,0 +1,75 @@
+{
+  "content_search": {
+    "description": "LinkedIn content search — finds posts announcing hiring for Life Sciences/Pharma/Healthcare MBA roles",
+    "keywords": [
+      "hiring product manager pharma",
+      "hiring business development biotech",
+      "hiring brand manager healthcare",
+      "life sciences consulting hiring",
+      "pharma marketing manager hiring",
+      "hiring BD manager life sciences",
+      "healthcare strategy role hiring",
+      "biotech commercial team hiring",
+      "hiring medical affairs manager",
+      "pharma product launch hiring",
+      "MedTech business development hiring",
+      "hiring licensing partnerships pharma"
+    ],
+    "max_per_run": 6,
+    "max_scrolls": 6
+  },
+  "jobs_search": {
+    "description": "LinkedIn Jobs search — structured job listings for Life Sciences MBA roles",
+    "keywords": [
+      "Product Manager Life Sciences",
+      "Business Development Pharma",
+      "Brand Manager Healthcare",
+      "Strategy Consultant Biotech",
+      "Marketing Manager Pharma",
+      "BD Manager MedTech"
+    ],
+    "max_per_run": 4,
+    "max_scrolls": 8,
+    "filters": {
+      "date_posted": "past_week",
+      "experience_level": "senior"
+    }
+  },
+  "naukri": {
+    "description": "Naukri.com — India's largest job board",
+    "enabled": true,
+    "keywords": [
+      "Product Manager Pharma",
+      "Business Development Life Sciences",
+      "Brand Manager Healthcare",
+      "Healthcare Consultant",
+      "Pharma Marketing Manager",
+      "Medical Affairs Manager"
+    ],
+    "max_per_run": 4,
+    "max_scrolls": 4,
+    "filters": {
+      "experience": "3-8",
+      "sort_by": "date"
+    }
+  },
+  "hirist": {
+    "description": "Hirist.tech — Tech-focused job board. Limited Life Sciences roles but includes product/BD categories.",
+    "enabled": true,
+    "keywords": [
+      "product-manager-jobs",
+      "business-development-jobs",
+      "marketing-jobs",
+      "strategy-consulting-jobs"
+    ],
+    "max_per_run": 2,
+    "max_scrolls": 3
+  },
+  "search_delay_ms": 5000,
+  "quick": {
+    "description": "Settings used with --quick flag for smoke tests",
+    "max_per_run": 1,
+    "max_scrolls": 2,
+    "search_delay_ms": 2000
+  }
+}

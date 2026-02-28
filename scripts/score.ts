@@ -38,11 +38,18 @@ Our services:
 - Tier 1 (Quick Cash): Freelance/contract — websites, landing pages, bug fixes, integrations, SEO. $500-$5,000.
 - Tier 2 (Product Build): End-to-end builds — MVPs, web apps, mobile apps, internal tools. $5,000-$30,000+.
 - Tier 3 (AI Founder Scale-Up): Non-technical AI founders — moving off no-code, proper infra, fractional CTO. $10,000-$50,000+.
+- Tier 4 (Branding & Packaging): Brand identity, logo design, packaging design, visual systems for CPG/DTC brands. $2,000-$15,000.
 
-Ideal clients: Founders, small biz owners (1-50 employees), non-technical AI builders.
+Ideal clients: Founders, small biz owners (1-50 employees), non-technical AI builders, CPG/DTC brand owners, food/beauty/wellness startup founders.
 NOT clients: Large enterprises (500+), casual discussion, recruiters, spam.
 
-For each lead, return: name, tier (1/2/3), relevance (0.0-1.0), urgency (high/medium/low), draftMessage (3-4 sentences, personalized, soft CTA), reasoning (1 sentence).
+STALE POST DETECTION:
+Check post content for indicators the need has been fulfilled or is outdated:
+- Phrases like: "position filled", "found someone", "no longer looking", "hired someone", "closed", "sorted this out", "all set now"
+- Poster updates: "Edit:", "Update:" followed by closure language
+If stale indicators found: set relevance to 0.1, urgency to "low", prefix reasoning with "STALE: [indicator found]"
+
+For each lead, return: name, tier (1/2/3/4), relevance (0.0-1.0), urgency (high/medium/low), draftMessage (3-4 sentences, personalized, soft CTA), reasoning (1 sentence).
 
 Return ONLY a valid JSON array.`;
 

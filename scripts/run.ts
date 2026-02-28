@@ -9,11 +9,13 @@
  *   2. Sales Nav search — Sales Navigator people search, finds ICP matches
  *
  * Usage:
- *   npx tsx scripts/run.ts                    # Full run (both modes)
+ *   npx tsx scripts/run.ts                    # Full run (both modes, all keywords)
  *   npx tsx scripts/run.ts --max 2            # Limit searches per mode
  *   npx tsx scripts/run.ts --keyword "test"   # Single content keyword test
  *   npx tsx scripts/run.ts --content-only     # Only content search
  *   npx tsx scripts/run.ts --salesnav-only    # Only Sales Nav search
+ *   npx tsx scripts/run.ts --branding-only    # Only branding/packaging keywords
+ *   npx tsx scripts/run.ts --dev-only         # Only dev service keywords
  */
 
 import { loadEnv } from "./env.js";
@@ -25,7 +27,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { extractAndScore } from "./extract.js";
-import { initDb, upsertLead, logRunStart, logRunEnd } from "./db.js";
+import { initDb, upsertLead, logRunStart, logRunEnd, hashPostContent, getSeenPostHashes, markPostsSeen } from "./db.js";
 import { generateDigest } from "./digest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -207,7 +209,9 @@ function buildSalesNavSearchUrl(keyword: string): string {
 async function runSearch(
   page: import("playwright").Page,
   job: SearchJob,
-  stats: RunStats
+  stats: RunStats,
+  knownHashes: Set<string>,
+  seenInRun: Set<string>
 ): Promise<void> {
   const shortKeyword =
     job.keyword.length > 50 ? job.keyword.slice(0, 50) + "..." : job.keyword;
@@ -225,21 +229,43 @@ async function runSearch(
     console.log("    Scrolling and extracting...");
     const blocksJson = await page.evaluate(`(${job.extractJs})()`);
     const parsed = JSON.parse(blocksJson as string);
-    const blockCount = parsed.total || 0;
-    stats.blocksFound += blockCount;
+    const blocks: { profileUrl: string; cardText: string; links: unknown[] }[] =
+      Array.isArray(parsed) ? parsed : parsed.blocks || [];
+    stats.blocksFound += blocks.length;
     console.log(
-      `    Found ${blockCount} result blocks (${parsed.scrolls} scrolls)`
+      `    Found ${blocks.length} result blocks (${parsed.scrolls || 0} scrolls)`
     );
 
-    if (blockCount === 0) {
+    if (blocks.length === 0) {
       console.log("    No results — skipping scoring");
       stats.searchesRun++;
       return;
     }
 
+    // Filter out already-seen posts before Claude scoring
+    const filtered = blocks.filter((b) => {
+      const hash = hashPostContent(b.profileUrl, b.cardText);
+      if (knownHashes.has(hash) || seenInRun.has(hash)) return false;
+      seenInRun.add(hash);
+      return true;
+    });
+    const skipped = blocks.length - filtered.length;
+    if (skipped > 0) console.log(`    Skipped ${skipped} already-seen posts`);
+
+    if (filtered.length === 0) {
+      console.log("    All posts already seen — skipping scoring");
+      stats.searchesRun++;
+      return;
+    }
+
     // Score leads via Claude
-    console.log("    Scoring with Claude...");
-    const leads = await extractAndScore(blocksJson as string, job.keyword, job.mode);
+    const filteredJson = JSON.stringify({
+      blocks: filtered,
+      scrolls: parsed.scrolls || 0,
+      total: filtered.length,
+    });
+    console.log(`    Scoring ${filtered.length} new blocks with Claude...`);
+    const leads = await extractAndScore(filteredJson, job.keyword, job.mode);
     console.log(`    ${leads.length} qualified leads`);
     stats.leadsScored += leads.length;
 
@@ -263,6 +289,14 @@ async function runSearch(
       if (isNew) stats.leadsNew++;
     }
 
+    // Mark all extracted blocks as seen for future runs
+    markPostsSeen(
+      filtered.map((b) => ({
+        contentHash: hashPostContent(b.profileUrl, b.cardText),
+        profileUrl: b.profileUrl,
+      }))
+    );
+
     stats.searchesRun++;
   } catch (err) {
     const msg = `[${modeLabel}] "${shortKeyword}" failed: ${(err as Error).message}`;
@@ -283,12 +317,23 @@ async function main() {
     singleKeywordIdx >= 0 ? args[singleKeywordIdx + 1] : null;
   const contentOnly = args.includes("--content-only");
   const salesnavOnly = args.includes("--salesnav-only");
+  const brandingOnly = args.includes("--branding-only");
+  const devOnly = args.includes("--dev-only");
 
   // Init DB
   initDb();
 
   // Load config
   const config = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+
+  // Select keywords based on --branding-only / --dev-only flags
+  function selectKeywords(section: { keywords?: string[]; branding_keywords?: string[] }): string[] {
+    const dev = section.keywords || [];
+    const branding = section.branding_keywords || [];
+    if (brandingOnly) return branding;
+    if (devOnly) return dev;
+    return [...dev, ...branding];
+  }
 
   // Build search jobs
   const jobs: SearchJob[] = [];
@@ -304,7 +349,7 @@ async function main() {
   } else {
     // Content search jobs
     if (!salesnavOnly) {
-      const contentKeywords = config.content_search?.keywords || [];
+      const contentKeywords = selectKeywords(config.content_search || {});
       const contentMax = maxSearches || config.content_search?.max_per_run || 6;
       for (const kw of contentKeywords.slice(0, contentMax)) {
         jobs.push({
@@ -318,7 +363,7 @@ async function main() {
 
     // Sales Navigator jobs
     if (!contentOnly) {
-      const snKeywords = config.sales_nav_search?.keywords || [];
+      const snKeywords = selectKeywords(config.sales_nav_search || {});
       const snMax = maxSearches || config.sales_nav_search?.max_per_run || 4;
       for (const kw of snKeywords.slice(0, snMax)) {
         jobs.push({
@@ -374,6 +419,11 @@ async function main() {
 
   const runId = logRunStart();
 
+  // Load seen post hashes for pre-score dedup
+  const knownHashes = getSeenPostHashes();
+  const seenInRun = new Set<string>();
+  console.log(`Loaded ${knownHashes.size} previously seen post hashes\n`);
+
   // Verify LinkedIn login
   console.log("Checking LinkedIn login...");
   await page.goto("https://www.linkedin.com/feed/", {
@@ -404,7 +454,7 @@ async function main() {
   for (let i = 0; i < jobs.length; i++) {
     const job = jobs[i];
     console.log(`[${i + 1}/${jobs.length}]`);
-    await runSearch(page, job, stats);
+    await runSearch(page, job, stats, knownHashes, seenInRun);
 
     // Delay between searches
     if (i < jobs.length - 1) {

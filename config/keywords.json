@@ -15,6 +15,16 @@
       "looking for a fractional CTO",
       "AI startup need technical cofounder"
     ],
+    "branding_keywords": [
+      "looking for branding help",
+      "need help with brand identity",
+      "need packaging design",
+      "looking for packaging designer",
+      "startup rebranding",
+      "CPG brand design help",
+      "product packaging design",
+      "brand identity designer"
+    ],
     "max_per_run": 6
   },
   "sales_nav_search": {
@@ -26,6 +36,12 @@
       "founder no-code scaling",
       "small business owner need website",
       "founder fractional CTO"
+    ],
+    "branding_keywords": [
+      "CPG founder packaging",
+      "DTC brand founder",
+      "food brand founder",
+      "beauty brand founder startup"
     ],
     "max_per_run": 4
   },

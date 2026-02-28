@@ -37,6 +37,31 @@ export function hashProfileUrl(url: string): string {
   return crypto.createHash("sha256").update(url).digest("hex").slice(0, 16);
 }
 
+export function hashPostContent(profileUrl: string, cardText: string): string {
+  const key = profileUrl + (cardText || "").slice(0, 300);
+  return crypto.createHash("sha256").update(key).digest("hex").slice(0, 16);
+}
+
+export function getSeenPostHashes(): Set<string> {
+  const db = getDb();
+  const rows = db.prepare("SELECT content_hash FROM seen_posts").all() as { content_hash: string }[];
+  db.close();
+  return new Set(rows.map((r) => r.content_hash));
+}
+
+export function markPostsSeen(posts: { contentHash: string; profileUrl: string }[]): void {
+  if (posts.length === 0) return;
+  const db = getDb();
+  const now = new Date().toISOString();
+  const stmt = db.prepare(
+    "INSERT OR IGNORE INTO seen_posts (content_hash, profile_url, found_at) VALUES (?, ?, ?)"
+  );
+  for (const p of posts) {
+    stmt.run(p.contentHash, p.profileUrl, now);
+  }
+  db.close();
+}
+
 export function getDb(): Database.Database {
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
@@ -79,6 +104,12 @@ export function initDb(): void {
     CREATE INDEX IF NOT EXISTS idx_leads_tier ON leads(tier);
     CREATE INDEX IF NOT EXISTS idx_leads_urgency ON leads(urgency);
     CREATE INDEX IF NOT EXISTS idx_leads_found_at ON leads(found_at);
+
+    CREATE TABLE IF NOT EXISTS seen_posts (
+      content_hash TEXT PRIMARY KEY,
+      profile_url  TEXT NOT NULL,
+      found_at     TEXT NOT NULL
+    );
   `);
 
   db.close();

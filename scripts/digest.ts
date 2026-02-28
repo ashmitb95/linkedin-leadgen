@@ -34,7 +34,7 @@ export function generateDigest(date?: string): string {
   const mediumUrgency = leads.filter((l) => l.urgency === "medium");
   const lowUrgency = leads.filter((l) => l.urgency === "low");
 
-  const tierCounts = [1, 2, 3].map(
+  const tierCounts = [1, 2, 3, 4].map(
     (t) => leads.filter((l) => l.tier === t).length
   );
 
@@ -45,7 +45,7 @@ export function generateDigest(date?: string): string {
   md += `- Leads found: ${leads.length}\n`;
   md += `- New leads: ${latestRun?.leads_new ?? leads.length}\n`;
   md += `- High urgency: ${highUrgency.length}\n`;
-  md += `- Tier breakdown: T1: ${tierCounts[0]} | T2: ${tierCounts[1]} | T3: ${tierCounts[2]}\n\n`;
+  md += `- Tier breakdown: T1: ${tierCounts[0]} | T2: ${tierCounts[1]} | T3: ${tierCounts[2]} | T4: ${tierCounts[3]}\n\n`;
 
   md += `### Pipeline Totals\n`;
   md += `- Total leads: ${stats.total_leads}\n`;
@@ -80,7 +80,7 @@ export function generateDigest(date?: string): string {
 }
 
 function formatLeadEntry(lead: Lead): string {
-  const tierLabel = lead.tier === 1 ? "T1-Freelance" : lead.tier === 2 ? "T2-Product" : "T3-AIScale";
+  const tierLabel = lead.tier === 1 ? "T1-Freelance" : lead.tier === 2 ? "T2-Product" : lead.tier === 3 ? "T3-AIScale" : "T4-Branding";
   const postSnippet = lead.post_content
     ? lead.post_content.slice(0, 120) + (lead.post_content.length > 120 ? "..." : "")
     : "N/A";

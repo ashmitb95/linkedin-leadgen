@@ -48,7 +48,7 @@ interface RunStats {
 
 // ───── Browser JS — Content Search (hiring posts) ─────
 // maxScrolls is injected at runtime from config
-function buildContentExtractJs(maxScrolls: number): string {
+export function buildContentExtractJs(maxScrolls: number): string {
   return `async () => {
   var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
   var getHeight = function() { return document.documentElement.scrollHeight; };
@@ -119,7 +119,7 @@ function buildContentExtractJs(maxScrolls: number): string {
 }
 
 // ───── Browser JS — LinkedIn Jobs Search ─────
-function buildJobsExtractJs(maxScrolls: number): string {
+export function buildJobsExtractJs(maxScrolls: number): string {
   return `async () => {
   var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
 
@@ -193,7 +193,7 @@ function buildJobsExtractJs(maxScrolls: number): string {
 }
 
 // ───── Browser JS — Naukri.com ─────
-function buildNaukriExtractJs(maxScrolls: number): string {
+export function buildNaukriExtractJs(maxScrolls: number): string {
   return `async () => {
   var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
   var getHeight = function() { return document.documentElement.scrollHeight; };
@@ -263,7 +263,7 @@ function buildNaukriExtractJs(maxScrolls: number): string {
 }
 
 // ───── Browser JS — Hirist.tech ─────
-function buildHiristExtractJs(maxScrolls: number): string {
+export function buildHiristExtractJs(maxScrolls: number): string {
   return `async () => {
   var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
   var getHeight = function() { return document.documentElement.scrollHeight; };
@@ -330,18 +330,18 @@ function buildHiristExtractJs(maxScrolls: number): string {
 
 // ───── Search types ─────
 
-interface SearchJob {
+export interface SearchJob {
   keyword: string;
   mode: "content" | "jobs" | "naukri" | "hirist";
   url: string;
   extractJs: string;
 }
 
-function buildContentSearchUrl(keyword: string): string {
+export function buildContentSearchUrl(keyword: string): string {
   return `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent(keyword)}&sortBy=date_posted`;
 }
 
-function buildJobsSearchUrl(keyword: string, filters?: any): string {
+export function buildJobsSearchUrl(keyword: string, filters?: any): string {
   let url = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keyword)}`;
   if (filters?.date_posted === "past_week") url += "&f_TPR=r604800";
   if (filters?.experience_level === "senior") url += "&f_E=4";
@@ -349,14 +349,14 @@ function buildJobsSearchUrl(keyword: string, filters?: any): string {
   return url;
 }
 
-function buildNaukriSearchUrl(keyword: string, filters?: any): string {
+export function buildNaukriSearchUrl(keyword: string, filters?: any): string {
   const exp = filters?.experience || "5-15";
   let url = `https://www.naukri.com/${encodeURIComponent(keyword.toLowerCase().replace(/\s+/g, "-"))}-jobs?k=${encodeURIComponent(keyword)}&experience=${exp}`;
   if (filters?.sort_by === "date") url += "&sortBy=date";
   return url;
 }
 
-function buildHiristSearchUrl(keyword: string): string {
+export function buildHiristSearchUrl(keyword: string): string {
   // Hirist uses category pages, not search — keyword is the category path slug
   if (keyword.startsWith("http")) return keyword;
   return `https://www.hirist.tech/c/${keyword}`;
@@ -648,7 +648,10 @@ async function main() {
   console.log("\n" + generateJobDigest());
 }
 
-main().catch((err) => {
-  console.error("Run failed:", err);
-  process.exit(1);
-});
+const isMain = process.argv[1]?.endsWith("job-run.ts") || process.argv[1]?.endsWith("job-run.js");
+if (isMain) {
+  main().catch((err) => {
+    console.error("Run failed:", err);
+    process.exit(1);
+  });
+}
